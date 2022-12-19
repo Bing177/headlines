@@ -1,28 +1,50 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+	<div class="container">
+		<!-- 头部区域 -->
+		<Top />
+		<el-divider></el-divider>
+		<!-- 导航栏 -->
+		<Navigator />
+		<!-- 展示区 -->
+	</div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
-export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+	import Top from './components/Top'
+	import Navigator from './components/Navigator'
+	export default {
+		name: 'App',
+		components: {
+			Top,
+			Navigator
+		},
+	}
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+<style lang="less">
+*{
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+li{
+	list-style: none;
+}
+a{
+	text-decoration: none;
+	color: black;
+}
+a:hover{
+	color: #FA0206;
+}
+body{
+	width: 70%;
+	margin: 120px auto;
+}
+.container{
+	padding:3px;
+	.el-divider{
+		margin-top: 120px;
+	}
 }
 </style>

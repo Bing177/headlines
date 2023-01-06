@@ -7,8 +7,9 @@ export default {
             try {
                 const res = await axios({
                     method: 'POST',
-                    url: 'http://localhost:5500/news/hot_search',
-                    params: { page: playload.page, pageSize: playload.pageSize },//query参数
+                    url: 'http://localhost:5500/news/hotsearch',
+                    // params: { page: playload.page, pageSize: playload.pageSize },//query参数
+                    data: { page: playload.page, pageSize: playload.pageSize },//JSON格式
                     timeout: 3000
                 })
                 commit('GETHOTSEARCH', res.data)

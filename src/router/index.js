@@ -1,11 +1,13 @@
 import VueRouter from 'vue-router'
 import Attention from '../pages/Attention'
 import Recommend from '../pages/Recommend'
+import Technology from '../pages/Technology'
 import Hot from '../pages/Hot'
-import Recreate from '../pages/Recreate'
-import Military from '../pages/Military'
-import Educate from '../pages/Educate'
-import Sport from '../pages/Sport'
+import International from '../pages/International'
+import recreation from '../pages/Recreate'
+import Cate from '../pages/Cate'
+import Game from '../pages/Game'
+import Login from '../pages/Login'
 //获取原型上的push方法
 const originalPush = VueRouter.prototype.push
 //修改原型上的push方法
@@ -13,9 +15,11 @@ VueRouter.prototype.push = function push(location) {
 	return originalPush.call(this, location).catch(e => e)
 }
 export default new VueRouter({
+	mode: 'hash',
 	routes: [
 		{
-			path: '/attent',
+			name: 'guanzhu',
+			path: '/attention',
 			component: Attention
 		},
 		{
@@ -24,22 +28,35 @@ export default new VueRouter({
 			component: Recommend
 		},
 		{
+			name: 'keji',
+			path: '/technology',
+			component: Technology
+		},
+		{
 			path: '/hot',
 			component: Hot
 		},
 		{
-			path: '/recreate',
-			component: Recreate
-		}, {
-			path: '/military',
-			component: Military
-		}, {
-			path: '/educate',
-			component: Educate
+			path: '/international',
+			component: International
 		},
 		{
-			path: '/sport',
-			component: Sport
+			path: '/recreation',
+			component: recreation
+		},
+
+		{
+			path: '/cate',
+			component: Cate
+		},
+		{
+			path: '/game',
+			component: Game
+		},
+		{
+			name: 'login',
+			path: '/login',
+			component: Login
 		},
 		{
 			path: '*',

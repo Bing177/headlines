@@ -6,11 +6,11 @@
 			v-for="n of navList" 
 			:key="n.id" 
 			:label="n.title" 
-			:name="n.number"
+			:name="n.sequence"
 			:path="n.path"
 			:content="n.content"
 			>
-				<keep-alive include="Attention,Recommend">
+				<keep-alive include="Attention,Recommend,Technology,Hot,International,Recreation,Cate,Game">
 					<router-view></router-view>
 				</keep-alive>
 			</el-tab-pane>
@@ -18,10 +18,70 @@
 		<!-- 导航栏右侧 -->
 		<div class="nav-right">
 			<!-- 登录区域 -->
-			<div class="login-region">
-				<div style="text-align:center;color:#B5B5B5;font-size:18px;" >登录后，头条更懂你</div>
-				<div style="text-align:center;color:#B5B5B5;font-size:18px;">内容更有趣</div>
-				<el-button type="danger">立即登录</el-button>
+			<!-- 未登录状态 -->
+			<div v-if="!phone && !nickname" class="login-region">
+				<div style="text-align:center;color:#B5B5B5;font-size:18px;margin-top:20%;padding:10px 0;" >登录后，头条更懂你</div>
+				<div style="text-align:center;color:#B5B5B5;font-size:18px;padding:10px 0;">内容更有趣</div>
+				<el-button @click="toLogin" type="danger">立即登录</el-button>
+			</div>
+			<!-- 已登录状态 -->
+			<div v-else class="login-region">
+				<!-- 登录状态内容 -->
+				<div class="login-content">
+					<!-- 用户昵称 -->
+					<div class="user user-name">
+						<router-link to="/abc">
+							<img :src="avatar" />
+							<h3 style="">{{nickname}} ></h3>
+						</router-link>
+					</div>
+					<!-- 用户魅力 -->
+					<ul class="user user-charm">
+						<li>
+							<router-link to="/abc">
+								<h2>{{praise}}</h2>
+								<p>获赞</p>
+							</router-link>
+						</li>
+						<li>
+							<router-link to="/abc">
+								<h2>{{fan}}</h2>
+								<p>粉丝</p>
+							</router-link>
+						</li>
+						<li>
+							<router-link to="/abc">
+								<h2>{{attention}}</h2>
+								<p>关注</p>
+							</router-link>
+						</li>
+					</ul>
+					<!-- 用户操作 -->
+					<ul class="user user-operate">
+						<li>
+							<router-link to="/abc">
+								<img src="../../assets/title.jpg" />
+								<p>写文章</p>
+							</router-link>
+						</li>
+						<li>
+							<router-link to="/abc">
+								<img src="../../assets/headline.jpg" style="margin-left:8px;"/>
+								<p>发微头条</p>
+							</router-link>
+						</li><li>
+							<router-link to="/abc">
+								<img src="../../assets/replay.jpg" />
+								<p>写回答</p>
+							</router-link>
+						</li><li>
+							<router-link to="/abc">
+								<img src="../../assets/video.jpg" />
+								<p>发视频</p>
+							</router-link>
+						</li>
+					</ul>
+				</div>
 			</div>
 			<!-- 头条热榜 -->
 			<div class="top-search">
@@ -41,9 +101,11 @@
 				<div class="top-search-content">
 					<ol>
 						<li v-for="h of hotsearch" :key="h.id">
-							<router-link to="/abc">
+							<router-link to="/abc" style="text-align:left !important;">
 								<span></span>&nbsp;&nbsp;
-								{{h.title}}
+								<h4 style="display:inline;font-weight:400; vertical-align:middle;margin-left:-10px;">{{h.title}}</h4>
+								<img v-if="h.hot===1" src="../../assets/hot.png"/>
+								<img v-else-if="h.latest===1" src="../../assets/latest.png" />
 							</router-link>
 						</li>
 					</ol>
@@ -55,18 +117,25 @@
 
 <script>
 	import {mapState} from 'vuex'
+import axios from 'axios'
 	export default {
 		name: 'NewsNavigator',
 		data() {
 			return {
 				activeName: 'second',
 				addStyle: '',
+				gotop:'',
 				page: 0,
-				pageSize:10
+				pageSize: 10,
+				phone: null,
+				nickname: null,
+				praise: 0,
+				fan: 0,
+				attention:0
 			}
 		},
 		computed: {
-			...mapState('nav', ['navList']),
+			...mapState('nav', ['navList','avatar']),
 			...mapState('hotsearch',['hotsearch'])
 		},
 		methods: {
@@ -86,13 +155,37 @@
 					this.addStyle = ''
 				}, 550)
 				//2.发送请求
-				this.$store.dispatch('hotsearch/getHotSearch',{page:this.page++,pageSize:this.pageSize})
+				this.$store.dispatch('hotsearch/getHotSearch',
+					{ page: ++this.page, pageSize: this.pageSize }
+				)
 			},
-			
+			toLogin() {
+				scrollTo(0,0)
+				this.$bus.$emit('sendFlg',true)//与App组件通信
+				this.$router.push({
+					name:'login'
+				})
+				
+			}
 		},
 		mounted() {
 			this.$store.dispatch('nav/getNavInfo')
-			this.$store.dispatch('hotsearch/getHotSearch',{page:0,pageSize:10})
+			this.$store.dispatch('hotsearch/getHotSearch', { page: 0, pageSize: 10 })
+			this.phone = localStorage.getItem('phone')
+			this.nickname = localStorage.getItem('nickname')
+			if (this.phone && this.nickname) {//已登录状态
+				this.$store.dispatch('nav/getAvatar')
+				axios.get('http://localhost:5500/news/user/charm').then(v => {
+					const [{praise,fan,attention}] = v.data
+					this.praise = praise
+					this.fan = fan,
+					this.attention = attention
+				}).catch(e=>{console.log(e)})
+			}
+		},
+		updated() {
+			this.phone = localStorage.getItem('phone')
+			this.nickname = localStorage.getItem('nickname')
 		}
 	}
 </script>
@@ -123,16 +216,108 @@
 		display:flex;
 		flex:1;
 		flex-direction:column;
+		margin:5px;
 		.login-region{
-			align-content: center;
-			margin-top: 50px;
+			height: 250px;
 			.el-button{
 				background-color:#FA0206;
-				margin-left:125px;
-				margin-top: 20px;
+				width: 70%;
+				align-self: center;
+				margin-left: 50px;
 			}
 			.el-button:hover{
 				background-color: #F15455;
+			}
+			.login-content{
+				display: flex;
+				flex-direction: column;
+				justify-content: space-around;
+				align-content: center;
+				padding:5px;
+				height: 100%;
+				background-color:#fafafa;
+				.user{
+					a{
+						&:hover{
+							color: #000;
+						}
+					}
+				}
+				.user-name{
+					height:50px;
+					a{
+						display: inline-block;
+						position: relative;
+						height: 100%;
+						padding: 0 10px;
+						img{
+							position: relative;;
+							width: 30px;
+							height: 30px;
+							top: 50%;
+							transform: translate(0,-50%);
+							border-radius: 50%;
+						}
+						h3{
+							display:inline-block;
+							vertical-align:middle;
+							padding-left:10px;
+							font-size:x-large;
+						}
+					}
+				}
+				.user-charm{
+					display: flex;
+					justify-content: space-around;
+					align-items: center;
+					height: 60px;
+					li{
+						width: 60px;
+						height: 100%;
+						position: relative;
+						a{
+							position: relative;
+							left: 50%;
+							top:50%;
+							display: inline-block;
+							height: 50px;
+							padding: 5px;
+							transform: translate(-50%,-50%);
+							h2{
+								text-align: center;
+							}
+						}
+					}
+				}
+				.user-operate{
+					display: flex;
+					justify-content: space-around;
+					align-items: center;
+					height:100px;
+					li{
+						position: relative;
+						width: 100%;
+						height: 100%;
+						padding:0 10px;
+						a{
+							display: inline-block;
+							position: relative;
+							left: 50%;
+							top: 50%;
+							width:65px;
+							height: 70px;
+							transform: translate(-50%,-50%);
+							img{
+								position: relative;
+								width: 44px;
+								height: 44px;
+							}
+							p{
+								position: relative;
+							}
+						}
+					}
+				}
 			}
 		}
 		.top-search{
@@ -165,7 +350,6 @@
 								background: url(https://s1.ax1x.com/2022/12/18/zbLkJP.png) no-repeat;
 							}
 						}
-						
 					}
 					:nth-child(2){
 						a{
@@ -236,6 +420,11 @@
 						font-weight: 350;
 						line-height: 45px;
 						padding: 5px;
+						a{
+							img{
+								width:20px;height:20px;
+							}
+						}
 						span{
 							display:inline-block;
 							width:25px;

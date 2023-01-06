@@ -1,25 +1,25 @@
 <template>
-    <Common :typeList="recreationList"/>
+    <Common :typeList="internationalList"/>
 </template>
 
 <script>
 import _ from 'lodash'
-import Common from '../../components/Common'
 import { mapState } from 'vuex'
+import Common from '../../components/Common'
 export default {
-    name: 'Recreation',
+    name: 'International',
     components: { Common },
     computed: {
-        ...mapState('nav',['recreationList'])
+        ...mapState('nav', ['internationalList'])
     },
     methods: {
         debounce: _.debounce(function () {
-            this.$store.dispatch('nav/getRecreation')
+            this.$store.dispatch('nav/getInternational')
         })
     },
     activated() {
         this.debounce()
-    }
+    },
 }
 </script>
 

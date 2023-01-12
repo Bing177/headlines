@@ -42,8 +42,4 @@ axios.interceptors.response.use(response=>Promise.resolve(response),error=>{
 export default axios
 ```
 
-# 三、组件与路由
 
-1. Top组件
-
-   ![]()

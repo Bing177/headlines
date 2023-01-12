@@ -1,38 +1,53 @@
 const express = require('express')
+const jwt = require('jsonwebtoken')
 const { showTableInfo, returnhotsearch, insertUserInfo } = require('./headlines-mysql')
 const router = express.Router()
-
+const secretkey = require('./server-news')
 //获取头像
-router.get('/user/avatar', (req, res) => {
-    res.send('https://s1.ax1x.com/2023/01/03/pSioJ6H.png')
+router.get('/api/user/avatar', (req, res) => {
+    res.send('https://s1.ax1x.com/2023/01/03/pSioJ6H.png').end()
 })
-//获取用户，用于登录后将信息插入数据库中
-router.post('/user', async (req, res) => {
+//登录
+router.post('/api/user', (req, res) => {
     const { nickname, phone, avatar } = req.body
-    try {
-        const result = await insertUserInfo(nickname, phone, avatar)
-        res.send(result)
-    } catch (error) {
-        res.send(error)
-    }
+    insertUserInfo(nickname, phone, avatar).catch(e => res.send(e))
+    let token = jwt.sign({ nickname, phone }, secretkey.secret, { expiresIn: '1h' })
+    res.send({
+        status: 200,
+        msg: 'login success',
+        token: 'Bearer ' + token
+    }).end()
 
+})
+// 获取用户信息
+router.get('/get/user', (req, res) => {
+    res.send({
+        status: 200,
+        msg: '已登录',
+        info: req.auth
+    })
+})
+//退出
+router.get('/api/quit', (req, res) => {
+    req.session.destroy()
+    res.send({ status: 0, msg: '退出登录' }).end()
 })
 //获取用户获赞、粉丝和关注信息
-router.get('/user/charm', async (req, res) => {
+router.get('/api/user/charm', async (req, res) => {
     try {
         const data = await showTableInfo('user')
-        res.send(data)
+        res.send(data).end()
     } catch (error) {
-        res.send(error)
+        res.send(error).end()
     }
 })
 //导航栏
-router.get('/navs', async (req, res) => {
+router.get('/api/navs', async (req, res) => {
     try {
         const data = await showTableInfo('navigatorbar')
-        res.send(data)
+        res.send(data).end()
     } catch (error) {
-        res.send(error)
+        res.send(error).end()
     }
 })
 //头条热搜
@@ -56,89 +71,89 @@ router.get('/navs', async (req, res) => {
     }
 }) */
 // （2）通过mysql进行分页来限制每次返回的数据
-router.post('/hotsearch', async (req, res) => {
+router.post('/api/hotsearch', async (req, res) => {
     try {
         const data = await returnhotsearch('hotsearch', req.body.page, req.body.pageSize)
-        res.send(data)
+        res.send(data).end()
     } catch (error) {
-        res.send(error)
+        res.send(error).end()
     }
 })
 //关注
-router.post('/attention', async (req, res) => {
+router.post('/api/attention', async (req, res) => {
     try {
         const data = await showTableInfo('attention')
-        res.send(data)
+        res.send(data).end()
     } catch (error) {
-        res.send(error)
+        res.send(error).end()
     }
 })
 //推荐
-router.post('/recommend', async (req, res) => {
+router.post('/api/recommend', async (req, res) => {
     try {
         const data = await showTableInfo('recommend')
-        res.send(data)
+        res.send(data).end()
     } catch (error) {
-        res.send(error)
+        res.send(error).end()
     }
 })
 //科技
-router.post('/technology', async (req, res) => {
+router.post('/api/technology', async (req, res) => {
     try {
         const data = await showTableInfo('technology')
-        res.send(data)
+        res.send(data).end()
     } catch (error) {
-        res.send(error)
+        res.send(error).end()
     }
 })
 // 热点
-router.post('/hot', async (req, res) => {
+router.post('/api/hot', async (req, res) => {
     try {
         const data = await showTableInfo('hot')
-        res.send(data)
+        res.send(data).end()
     } catch (error) {
-        res.send(error)
+        res.send(error).end()
     }
 })
 //国际
-router.post('/international', async (req, res) => {
+router.post('/api/international', async (req, res) => {
     try {
         const data = await showTableInfo('international')
-        res.send(data)
+        res.send(data).end()
     } catch (error) {
-        res.send(error)
+        res.send(error).end()
     }
 })
 //娱乐
-router.post('/recreation', async (req, res) => {
+router.post('/api/recreation', async (req, res) => {
     try {
         const data = await showTableInfo('recreation')
-        res.send(data)
+        res.send(data).end()
     } catch (error) {
-        res.send(error)
+        res.send(error).end()
     }
 })
 //美食
-router.post('/cate', async (req, res) => {
+router.post('/api/cate', async (req, res) => {
     try {
         const data = await showTableInfo('cate')
-        res.send(data)
+        res.send(data).end()
     } catch (error) {
-        res.send(error)
+        res.send(error).end()
     }
 })
 //游戏
-router.post('/game', async (req, res) => {
+router.post('/api/game', async (req, res) => {
     try {
         const data = await showTableInfo('game')
-        res.send(data)
+        res.send(data).end()
     } catch (error) {
-        res.send(error)
+        res.send(error).end()
     }
 })
 
 //验证码
-router.get('/login/getcode', (req, res) => {
+router.get('/api/login/getcode', (req, res) => {
     const lowercaseArray = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
         'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
     const uppercaseArray = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
@@ -159,7 +174,7 @@ router.get('/login/getcode', (req, res) => {
             code += numberArray[Math.floor(Math.random() * 10)]
         }
     }
-    res.send(code)
+    res.send(code).end()
 })
 
 module.exports = router

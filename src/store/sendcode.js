@@ -8,7 +8,7 @@ export default {
             try {
                 const res = await axios({
                     method: 'GET',
-                    url: '/news/login/getcode',
+                    url: '/news/api/login/getcode',
                     params: { codeLength: data },
                 })
                 commit('GETCODE', res.data)

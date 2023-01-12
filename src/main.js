@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import axios from './api/http'
 import App from './App.vue'
 import router from './router'
 import store from './store/index.js'
@@ -47,6 +48,7 @@ Vue.component(Backtop.name, Backtop)
 Vue.use(VueRouter)
 
 Vue.config.productionTip = false
+Vue.prototype.$axios = axios
 new Vue({
 	render: h => h(App),
 	router,

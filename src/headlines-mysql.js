@@ -54,16 +54,38 @@ async function returnhotsearch(tableName, index, maxnum) {
     return data
 }
 
-//插入用户信息
+//插入/更新用户信息
 async function insertUserInfo(nickname, phone, avatar) {
-    let sql = `insert into user values(null,'${nickname}',${phone},'${avatar}')`
-    let data = await new Promise((resolve, reject) => {
-        db.query(sql, (err, res) => {
+    //判断user表中是否已有用户
+    let userNum = await new Promise((resolve, reject) => {
+        db.query('select * from user', (err, res) => {
             if (err) reject(err)
             resolve(res)
         })
     })
-    return data
+    //没有，则添加
+    if (!userNum.length) {
+        let sql = `insert into user values(null,'${nickname}',${phone},'${avatar}',default,default,default)`
+        let data = await new Promise((resolve, reject) => {
+            db.query(sql, (err, res) => {
+                if (err) reject(err)
+                resolve(res)
+            })
+        })
+        return data
+    }
+    //有，则更新
+    else {
+        let sql = `update user set nickname='${nickname}',phone=${phone},avatar='${avatar}'`
+        let data = await new Promise((resolve, reject) => {
+            db.query(sql, (err, res) => {
+                if (err) reject(err)
+                resolve(res)
+            })
+        })
+        return data
+    }
+
 }
 
 // 统一暴露

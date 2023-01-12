@@ -58,7 +58,13 @@
             <!-- 底部区域 -->
             <div class="footer">
                 <span>其他登录方式</span>
-                <el-button @click="wechatLogin" icon="el-icon-chat-dot-round" size="medium" circle title="微信登录"></el-button>
+                <el-button 
+                @click="wechatLogin" 
+                icon="el-icon-chat-dot-round" 
+                size="medium" 
+                circle 
+                title="微信登录"
+                ></el-button>
                 <router-link to="/abc" title="qq登录"><img src="../../assets/QQ.png"/></router-link>
                 <router-link to="/abc" title="支付宝登录"><img src="../../assets/pay.png"/></router-link>
             </div>
@@ -68,7 +74,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 import { MessageBox } from 'element-ui'
 import { mapState } from 'vuex'
 export default {
@@ -93,7 +98,6 @@ export default {
         //退出
         quit() {
             this.$bus.$emit('logout', false)//与App组件通信
-            // this.$bus.$emit('changActiveName','second')
             this.$router.push({
                 name:'tuijian'
             })
@@ -102,8 +106,10 @@ export default {
         getUsername() {
             return ('用户' + Math.random().toString().slice(3,15)) //随机获得13为数字字符串
         },
-        //手机登录
-        login() {
+        //手机登录注册
+        async login() {
+            // axios.defaults.withCredentials = true // 配合session使用
+            this.$axios.defaults.baseURL = 'http://localhost:5500'
             // 判断手机号是否输入为空
             if (this.phone) {
                 const phoneStr = this.phone.toString()
@@ -112,19 +118,38 @@ export default {
                 if (phoneStr.length === 11 && phoneArray.indexOf('1') === 0) {
                     // 判断验证码是否输入正确
                     if (this.code === this.verificationcode) {
-                        // 1.登录成功后，将手机号等信息进行本地存储
-                        localStorage.setItem('phone', this.phone)
-                        localStorage.setItem('nickname', this.getUsername())
-                        this.nickname = this.getUsername()
-                        // 2.登录成功后，将用户信息存储至user表中
-                        this.$store.dispatch('nav/getAvatar') // 获取头像信息
-                        setTimeout(() => { this.portrait = this.avatar }, 500)
-                        setTimeout(() => {
-                            axios.post('http://localhost:5500/news/user',
-                                { nickname: this.nickname, phone: this.phone, avatar: this.portrait }
-                            ).catch(e => { console.log(e.message) })
-                        },500)
-                        this.quit()
+                        //#region  1.登录成功后，将信息通过session-cookie存储
+                        // localStorage.setItem('phone', this.phone)
+                        // this.nickname = this.getUsername()
+                        // localStorage.setItem('nickname', this.nickname)
+                        // this.$store.dispatch('nav/getAvatar').then(v => {
+                        //     this.portrait = this.avatar
+                        //     this.$axios.post('http://localhost:5500/news/api/user',
+                        //     { nickname: this.nickname, phone: this.phone, avatar: this.portrait })
+                        //     .catch(e=>{console.log(e.message)})
+                        // }) 
+                        //#endregion
+                        
+                        /* 2.登录成功后，将信息进行Token加密 */
+                        try {
+                            // 1.获取用户默认头像
+                            this.portrait = await this.$store.dispatch('nav/getAvatar')
+                            const res = await this.$axios.post('/news/api/user', {
+                                nickname: this.getUsername(),
+                                phone: this.phone,
+                                avatar: this.portrait
+                            })
+                            // 将获取到的对象里的token存储到本地存储中
+                            localStorage.setItem('token',res.data.token)
+                        } catch (error) {
+                            console.log(error)
+                        } finally {
+                            // 登陆后的操作
+                            this.$bus.$emit('logout', false)//与App组件通信
+                            this.$router.push({
+                                name:'tuijian'
+                            })
+                        }
                     } else {
                         this.index = 2
                         this.showError = true

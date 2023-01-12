@@ -9,9 +9,11 @@
 		<!-- 工具栏 -->
 		<Toolbar/>
 		<!-- 登录页面 -->
-		<keep-alive include="Login" v-if="flg">
+		<keep-alive include="Login,User" v-if="flg">
 			<router-view></router-view>
 		</keep-alive>
+		<!-- 个人中心页面 -->
+		
 	</div>
 </template>
 

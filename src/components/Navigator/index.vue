@@ -17,12 +17,12 @@
   		</el-tabs>
 		<!-- 导航栏右侧 -->
 		<div class="nav-right">
-			<!-- 登录区域 -->
+			<el-button v-if="false" :plain="true" @click="isLogin"></el-button>
 			<!-- 未登录状态 -->
-			<div v-if="!phone && !nickname" class="login-region">
+			<div v-if="!status" class="login-region">
 				<div style="text-align:center;color:#B5B5B5;font-size:18px;margin-top:20%;padding:10px 0;" >登录后，头条更懂你</div>
 				<div style="text-align:center;color:#B5B5B5;font-size:18px;padding:10px 0;">内容更有趣</div>
-				<el-button @click="toLogin" type="danger">立即登录</el-button>
+				<el-button @click="toLogin" type="danger">立即登录/注册</el-button>
 			</div>
 			<!-- 已登录状态 -->
 			<div v-else class="login-region">
@@ -30,7 +30,7 @@
 				<div class="login-content">
 					<!-- 用户昵称 -->
 					<div class="user user-name">
-						<router-link to="/abc">
+						<router-link to="/login/user">
 							<img :src="avatar" />
 							<h3 style="">{{nickname}} ></h3>
 						</router-link>
@@ -38,19 +38,19 @@
 					<!-- 用户魅力 -->
 					<ul class="user user-charm">
 						<li>
-							<router-link to="/abc">
+							<router-link to="/login/user">
 								<h2>{{praise}}</h2>
 								<p>获赞</p>
 							</router-link>
 						</li>
 						<li>
-							<router-link to="/abc">
+							<router-link to="/login/user">
 								<h2>{{fan}}</h2>
 								<p>粉丝</p>
 							</router-link>
 						</li>
 						<li>
-							<router-link to="/abc">
+							<router-link to="/login/user">
 								<h2>{{attention}}</h2>
 								<p>关注</p>
 							</router-link>
@@ -59,23 +59,23 @@
 					<!-- 用户操作 -->
 					<ul class="user user-operate">
 						<li>
-							<router-link to="/abc">
+							<router-link to="/login/user">
 								<img src="../../assets/title.jpg" />
 								<p>写文章</p>
 							</router-link>
 						</li>
 						<li>
-							<router-link to="/abc">
+							<router-link to="/login/user">
 								<img src="../../assets/headline.jpg" style="margin-left:8px;"/>
 								<p>发微头条</p>
 							</router-link>
 						</li><li>
-							<router-link to="/abc">
+							<router-link to="/login/user">
 								<img src="../../assets/replay.jpg" />
 								<p>写回答</p>
 							</router-link>
 						</li><li>
-							<router-link to="/abc">
+							<router-link to="/login/user">
 								<img src="../../assets/video.jpg" />
 								<p>发视频</p>
 							</router-link>
@@ -96,7 +96,6 @@
 							<span>换一换</span>
 						</el-button>
 					</div>
-					
 				</div>
 				<div class="top-search-content">
 					<ol>
@@ -116,8 +115,9 @@
 </template>
 
 <script>
-	import {mapState} from 'vuex'
-import axios from 'axios'
+import { mapState } from 'vuex'
+import { Message } from 'element-ui'
+import _ from 'lodash'
 	export default {
 		name: 'NewsNavigator',
 		data() {
@@ -127,6 +127,7 @@ import axios from 'axios'
 				gotop:'',
 				page: 0,
 				pageSize: 10,
+				status:false,//登录状态 
 				phone: null,
 				nickname: null,
 				praise: 0,
@@ -166,26 +167,56 @@ import axios from 'axios'
 					name:'login'
 				})
 				
-			}
+			},
+			isLogin() {
+        		Message({
+          			showClose: true,
+          			message: 'Token认证失效，请重新登录！',
+          			type: 'warning'
+        		});
+			},
+			getUserStaus: _.debounce(async function () {
+				try {
+					const res = await this.$axios.get('/news/get/user', {
+						headers: {
+							'Authorization': localStorage.getItem('token')
+						}
+					})
+					this.nickname = res.data.info.nickname
+					this.$store.dispatch('nav/getAvatar')
+					this.status = true
+					const res2 = await this.$axios.get('/news/api/user/charm')
+					const [{ praise, fan, attention }] = res2.data
+					this.praise = praise
+					this.fan = fan
+					this.attention = attention
+				} catch (error) {
+					this.isLogin()
+					return error
+				}
+			})
 		},
 		mounted() {
 			this.$store.dispatch('nav/getNavInfo')
 			this.$store.dispatch('hotsearch/getHotSearch', { page: 0, pageSize: 10 })
-			this.phone = localStorage.getItem('phone')
-			this.nickname = localStorage.getItem('nickname')
-			if (this.phone && this.nickname) {//已登录状态
+			this.$axios.defaults.baseURL = 'http://localhost:5500'
+			// this.phone = localStorage.getItem('phone')
+			// this.nickname = localStorage.getItem('nickname')
+			// 判断登录状态
+			/* if (this.phone && this.nickname) { // 已登录
 				this.$store.dispatch('nav/getAvatar')
-				axios.get('http://localhost:5500/news/user/charm').then(v => {
+				this.$axios.get('http://localhost:5500/news/api/user/charm').then(v => {
 					const [{praise,fan,attention}] = v.data
 					this.praise = praise
 					this.fan = fan,
 					this.attention = attention
 				}).catch(e=>{console.log(e)})
-			}
+			} */
+			// 判断用户登录状态
+			this.getUserStaus()
 		},
 		updated() {
-			this.phone = localStorage.getItem('phone')
-			this.nickname = localStorage.getItem('nickname')
+			this.getUserStaus()
 		}
 	}
 </script>

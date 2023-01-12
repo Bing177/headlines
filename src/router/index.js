@@ -8,6 +8,7 @@ import recreation from '../pages/Recreate'
 import Cate from '../pages/Cate'
 import Game from '../pages/Game'
 import Login from '../pages/Login'
+import User from '../pages/User'
 //获取原型上的push方法
 const originalPush = VueRouter.prototype.push
 //修改原型上的push方法
@@ -56,7 +57,14 @@ export default new VueRouter({
 		{
 			name: 'login',
 			path: '/login',
-			component: Login
+			component: Login,
+			children: [
+				{
+					name: 'user',
+					path: 'user',
+					component: User
+				}
+			]
 		},
 		{
 			path: '*',
